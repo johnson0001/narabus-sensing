@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import pandas as pd
 
+
 # separate stamp data and adrs data from original data 
 def separate_stamp(filepath):
     global stamp_data, adrs
