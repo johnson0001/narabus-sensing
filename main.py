@@ -1,27 +1,53 @@
+import os
+import re
 import glob
+import pandas as pd
 import preprocess
 
+# Experiment Date
+exDate = 20210704
+
+# Start and Finish Time of Experiment
+startExTime = str(exDate) + "09"
+finishExTime = str(exDate) + "16"
+
 # Raspberry Pi ID
-rasp_id = 2000
+raspID = 2000
 
 # Data Directry
-data_dir = "./raspi_origin/"
-correct_dir = "./correct_record/"
+rawDir = "./rawdata_" + str(exDate) + "/"
+correctDir = "./correct_record/"
+
+# Output Directry
+stampDfDir = "./data_" + str(exDate) + "/"
+adrsDfDir = stampDfDir + str(raspID) + "/"
 
 def main():
-    stamp_list = []
-    adrs_list = []
-    files = glob.glob(data_dir + str(rasp_id) + "/*.csv")
-    for filepath in files:
-        stamp_data, adrs = preprocess.separate_stamp(filepath)
-        stamp_list.append(stamp_data)
-        adrs_list.append(adrs)
-    # print(stamp_list[0])
-    # print(adrs_list[0])
-        
-    correct_files = preprocess.file_extraction(correct_dir, rasp_id)
+    stampList = []
+    adrsList = []
+    files = glob.glob(rawDir + str(raspID) + "/*.csv")
+    files = sorted(files)
+    ### extract files of experiment time ###
+    # files = preprocess.duringEx(files, startExTime)
+    for filePath in files:
+        stamp, adrs = preprocess.separateStampAndAdrs(filePath)
+        stampList.append(stamp)
+        adrsList.append(adrs)
+        ### create csv of adrs ###
+        fileName = os.path.basename(filePath)
+        adrs.to_csv(adrsDfDir + fileName)
     
-
+    ### create csv of stamp list ###
+    stampDF = pd.DataFrame(
+        stampList,
+        columns=['time', 'latitude', 'longitude'])
+    stampDF.to_csv(stampDfDir + str(raspID) + "_scan_list.csv")
+    
+    # print(stampList[0])
+    # print(adrsList[0])
+        
+    # correctFiles = preprocess.fromCorrectFolder(correctDir, raspID)
+    
 if __name__ == '__main__':
-    # main()
+    main()
     # preprocess.file_extraction(correct_dir, rasp_id)
